@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KeepIt15 Mejorado</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      color: #333;
+    }
+
+    header {
+      background: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 10;
+    }
+
+    .logo {
+      max-height: 50px;
+    }
+
+    .menu-icon {
+      font-size: 28px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .menu {
+      display: none;
+      flex-direction: column;
+      background: #fff;
+      position: absolute;
+      right: 20px;
+      top: 70px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      min-width: 260px;
+      padding-bottom: 10px;
+    }
+
+    .menu a {
+      padding: 10px 20px;
+      text-decoration: none;
+      color: #333;
+      border-bottom: 1px solid #eee;
+    }
+
+    .menu a:last-child {
+      border-bottom: none;
+    }
+
+    .menu a:hover {
+      background: #f0f0f0;
+    }
+
+    #spaceUsed {
+      display: block;
+      padding: 10px 20px;
+      font-weight: bold;
+      text-align: center;
+      border-top: 1px solid #eee;
+      color: #007bff;
+      font-size: 0.9em;
+      user-select: none;
+    }
+
+    #logoutBtn {
+      display: none;
+      margin: 20px auto;
+      background: #666;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    #uploadArea {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      background: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    #fileList {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .file {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .file:last-child {
+      border-bottom: none;
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      max-width: 70%;
+    }
+
+    .file-icon {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 2px rgba(0,0,0,0.2));
+    }
+
+    .file-name {
+      font-weight: 600;
+      word-break: break-word;
+    }
+
+    .file-size {
+      font-size: 0.85em;
+      color: #666;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .buttons button {
+      padding: 5px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+
+    .download {
+      background: #28a745;
+      color: white;
+    }
+    .download:hover {
+      background: #218838;
+    }
+
+    .delete {
+      background: #dc3545;
+      color: white;
+    }
+    .delete:hover {
+      background: #b02a37;
+    }
+
+    /* Modal confirm borrar */
+    #confirmModal {
+      display: none;
+      position: fixed;
+      z-index: 10000;
+      left: 0; top: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+    }
+
+    #confirmModal.active {
+      display: flex;
+    }
+
+    #confirmContent {
+      background: white;
+      border-radius: 10px;
+      max-width: 400px;
+      padding: 20px 25px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+
+    #confirmContent img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      margin-bottom: 15px;
+      filter: drop-shadow(0 0 3px rgba(0,0,0,0.1));
+    }
+
+    #confirmContent h2 {
+      margin: 0 0 10px 0;
+      font-weight: 700;
+    }
+
+    #confirmContent p {
+      margin: 0 0 20px 0;
+      font-size: 1em;
+      color: #555;
+    }
+
+    #confirmContent .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    #confirmContent button {
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      user-select: none;
+      font-size: 1em;
+      transition: background-color 0.3s ease;
+    }
+
+    #btnCancel {
+      background: #6c757d;
+      color: white;
+    }
+    #btnCancel:hover {
+      background: #5a6268;
+    }
+
+    #btnConfirm {
+      background: #dc3545;
+      color: white;
+    }
+    #btnConfirm:hover {
+      background: #b02a37;
+    }
+
+    /* Pantalla de carga */
+    #uploadLoading {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      font-size: 18px;
+      z-index: 9999;
+      text-align: center;
+      padding-top: 100px;
+    }
+
+    .progress-bar {
+      height: 10px;
+      width: 80%;
+      margin: 20px auto;
+      background: #555;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #00d1b2;
+      transition: width 0.3s ease;
+    }
+  .upload-card {
+  background: white;
+  border-radius: 10px;
+  padding: 15px 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  margin-bottom: 15px;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.upload-card .filename {
+  font-weight: bold;
+  color: #333;
+}
+
+.upload-card .filesize {
+  color: #666;
+  font-size: 0.85em;
+}
+
+.upload-card .upload-status {
+  color: #007bff;
+  font-weight: bold;
+}
+
+.upload-card .bar {
+  background: #ddd;
+  border-radius: 5px;
+  overflow: hidden;
+  height: 8px;
+  width: 100%;
+}
+
+.upload-card .bar-fill {
+  height: 100%;
+  width: 0%;
+  background: #00d1b2;
+  transition: width 0.2s ease;
+}
+  .upload-queue {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.upload-item {
+  display: flex;
+  gap: 15px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  padding: 15px 20px;
+  align-items: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.upload-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #eee;
+  flex-shrink: 0;
+}
+
+.upload-details {
+  flex-grow: 1;
+}
+
+.upload-name {
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+  word-break: break-word;
+}
+
+.upload-size {
+  font-size: 12px;
+  color: #666;
+}
+
+.upload-status {
+  font-size: 12px;
+  color: #007bff;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.upload-bar {
+  width: 100%;
+  height: 8px;
+  background: #e1e1e1;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.upload-fill {
+  height: 100%;
+  width: 0%;
+  background: #00b894;
+  transition: width 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+  </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+</head>
+<body>
+
+  <header>
+    <img class="logo" src="keepit15-logo.png" alt="KeepIt15">
+    <div class="menu-icon" onclick="toggleMenu()">☰</div>
+    <div class="menu" id="menu">
+      <a href="#">Inicio</a>
+      <a href="#" onclick="document.getElementById('fileInput').click()">Subir archivo</a>
+      <a href="#" onclick="logoutBtn.click()">Cerrar sesión</a>
+      <div id="spaceUsed">Espacio usado: 0 MB / 128 GB</div>
+    </div>
+  </header>
+  <h1 style="text-align: center; color: #007bff">¡Gratis / 128GB!</h1>
+<button id="loginBtn" style="display:none; margin: 10px auto; background:#4285F4; color:white; border:none; padding:10px 25px; border-radius:5px; cursor:pointer; font-size:16px; font-weight:bold; user-select:none;">
+  Iniciar sesión con 
+      <div class="social-buttons">
+      <a target="_normal"><i class="fab fa-google"></i></a>
+      </button>
+  
+  <button id="logoutBtn">Cerrar sesión</button>
+
+  <main>
+    <div id="uploadArea">
+      <label for="fileInput">📁 Subir archivo</label>
+      <input type="file" id="fileInput" multiple />
+      <div id="uploadQueue" class="upload-queue"></div>
+    </div>
+
+    <div id="fileList"></div>
+  </main>
+
+  <div id="uploadQueue" style="margin-top: 20px;"></div>
+  
+  <!-- Modal Confirmar Borrado -->
+  <div id="confirmModal">
+    <div id="confirmContent">
+      <img id="confirmIcon" src="" alt="Ícono archivo" />
+      <h2 id="confirmName">Nombre archivo</h2>
+      <p id="confirmSize">Tamaño: 0 MB</p>
+      <p>¿Querés borrar este archivo?</p>
+      <div class="modal-buttons">
+        <button id="btnCancel">Cancelar</button>
+        <button id="btnConfirm">Borrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pantalla de carga -->
+  <div id="uploadLoading">
+    <div id="uploadText">Subiendo archivo...</div>
+    <div class="progress-bar"><div class="progress-bar-fill" id="progressBar"></div></div>
+  </div>
+
+<script>
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDixmI3n41Pf5B0JDyTPyKhs5kDFNL1yvU",
+    authDomain: "almacenamiento-7246f.firebaseapp.com",
+    projectId: "almacenamiento-7246f",
+    appId: "1:188025491876:web:ecb10d08887b5d9508f131"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  const logoutBtn = document.getElementById("logoutBtn");
+  const uploadArea = document.getElementById("uploadArea");
+  const fileInput = document.getElementById("fileInput");
+  const spaceUsed = document.getElementById("spaceUsed");
+  const fileList = document.getElementById("fileList");
+  const menu = document.getElementById("menu");
+
+  // Modal elements
+  const confirmModal = document.getElementById("confirmModal");
+  const confirmName = document.getElementById("confirmName");
+  const confirmSize = document.getElementById("confirmSize");
+  const confirmIcon = document.getElementById("confirmIcon");
+  const btnCancel = document.getElementById("btnCancel");
+  const btnConfirm = document.getElementById("btnConfirm");
+
+  // Loading screen elements
+  const uploadLoading = document.getElementById("uploadLoading");
+  const progressBar = document.getElementById("progressBar");
+  const uploadText = document.getElementById("uploadText");
+
+  let archivos = [];
+  const MAX_STORAGE_MB = 128000;
+
+  let indexToDelete = null;
+
+  function toggleMenu() {
+    if (menu.style.display === "flex") {
+      menu.style.display = "none";
+    } else {
+      menu.style.display = "flex";
+    }
+  }
+
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      logoutBtn.style.display = "block";
+      uploadArea.style.display = "block";
+      fileList.style.display = "block";
+
+      archivos = JSON.parse(localStorage.getItem(`archivosDrive_${user.uid}`)) || [];
+      mostrarArchivos();
+      actualizarEspacio();
+    } else {
+      logoutBtn.style.display = "none";
+      uploadArea.style.display = "none";
+      fileList.style.display = "none";
+      spaceUsed.innerText = '';
+      menu.style.display = "none";
+      archivos = [];
+    }
+  });
+
+  logoutBtn.onclick = () => auth.signOut();
+
+  function actualizarEspacio() {
+    const totalUsado = archivos.reduce((acc, file) => acc + file.sizeMB, 0);
+    spaceUsed.innerText = `Espacio usado: ${totalUsado.toFixed(2)} MB / ${MAX_STORAGE_MB} MB`;
+  }
+
+  function guardar() {
+    const user = auth.currentUser;
+    if (user) localStorage.setItem(`archivosDrive_${user.uid}`, JSON.stringify(archivos));
+  }
+
+  function mostrarArchivos() {
+    fileList.innerHTML = '';
+
+    if (archivos.length === 0) {
+      fileList.innerHTML = '<p style="text-align:center;">No hay archivos guardados.</p>';
+      return;
+    }
+
+    archivos.forEach((file, index) => {
+      const iconURL = obtenerIconoPorTipo(file.type);
+
+      const div = document.createElement('div');
+      div.className = 'file';
+
+      div.innerHTML = `
+        <div class="file-info">
+          <img src="${iconURL}" alt="Icono" class="file-icon" />
+          <div>
+            <div class="file-name" title="${file.name}">${file.name}</div>
+            <div class="file-size">${file.sizeMB.toFixed(2)} MB</div>
+          </div>
+        </div>
+        <div class="buttons">
+          <button class="download" title="Descargar archivo" onclick="descargarArchivo(${index})">⬇</button>
+          <button class="delete" title="Eliminar archivo" onclick="confirmarBorrado(${index})">🗑</button>
+<div id="shareModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center;">
+  <div style="background:#fff; border-radius:10px; padding:20px 25px; max-width:400px; text-align:center; box-shadow:0 0 15px rgba(0,0,0,0.3);">
+    <h3 style="margin-top:0">📤 Compartir archivo</h3>
+    <input id="shareLink" type="text" readonly style="width:100%; padding:10px; margin:10px 0; font-size:14px; border:1px solid #ccc; border-radius:5px;" />
+    <button onclick="copiarEnlace()" style="padding:10px 20px; background:#007bff; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">📋 Copiar</button>
+    <button onclick="cerrarShare()" style="padding:10px 20px; background:#6c757d; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold; margin-left:10px;">Cerrar</button>
+  </div>
+</div>
+        </div>
+      `;
+
+      fileList.appendChild(div);
+    });
+  }
+
+  function obtenerIconoPorTipo(mime) {
+    if (!mime) return iconDefault();
+
+    if (mime.startsWith("image/")) return iconImage();
+    if (mime.startsWith("video/")) return iconVideo();
+    if (mime.startsWith("audio/")) return iconAudio();
+
+    if (mime === "application/pdf") return iconPdf();
+    if (mime === "application/zip" || mime === "application/x-zip-compressed") return iconZip();
+
+    return iconDefault();
+  }
+
+  // Íconos base64 simples para no depender de URL externas
+  function iconImage() {
+    return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTAiIGZpbGw9IiM0ODgxZmYiLz48Y2lyY2xlIGN4PSIyMCIgY3k9IjI0IiByPSI2IiBmaWxsPSIjZmZmIi8+PGNpcmNsZSBjeD0iNDAiIGN5PSIyOCIgcj0iNiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik0xNiA0Mmw5LTE0IDE0IDE4LTUgNiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+PC9zdmc+";
+  }
+  function iconVideo() {
+    return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTAiIGZpbGw9IiMzMzliZmYiLz48cG9seWxpbmUgcG9pbnRzPSIyMiwxNiAyMCwyNCAyOCwyOCAyMiwzMiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=";
+  }
+  function iconAudio() {
+    return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjQwIiB4PSIyMCIgcnk9IjYiIGZpbGw9IiM1NjhjZmYiLz48cGF0aCBkPSJNMTIgMTJhNiA2IDAgMCAwIDAgMTIgNiA2IDAgMCAwIDAtMTIiIGZpbGw9IndoaXRlIi8+PC9zdmc+";
+  }
+  function iconPdf() {
+    return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjY0IiB4PSI4IiByeD0iNiIgZmlsbD0iI2Y0NDAwMCIvPjx0ZXh0IHg9IjIwIiB5PSI0MCIgZm9udC1zaXplPSIyMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmaWxsPSJ3aGl0ZSI+UERGPC90ZXh0Pjwvc3ZnPg==";
+  }
+  function iconZip() {
+    return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjY0IiB4PSI4IiByeD0iNiIgZmlsbD0iI2Y0NDAwMCIvPjwvc3ZnPg==";
+  }
+
+  function iconDefault() {
+    return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjY2NjY2NjIiByeD0iMTIiLz48dGV4dCB4PSIyMCIgeT0iMzUiIGZpbGw9IiM2NjYiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtZmFtaWx5PSJBcmlhbCI+RmlsZTwvdGV4dD48L3N2Zz4=";
+  }
+
+  // -------- Descarga del archivo --------
+  function descargarArchivo(index) {
+    const file = archivos[index];
+    if (!file) return alert("Archivo no encontrado");
+
+    // Crear enlace con blob
+    const blob = base64ToBlob(file.data, file.type);
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function base64ToBlob(base64Data, contentType) {
+    contentType = contentType || '';
+    const sliceSize = 512;
+    const byteCharacters = atob(base64Data);
+    const byteArrays = [];
+
+    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+      const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+      const byteNumbers = new Array(slice.length);
+      for (let i=0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+
+      const byteArray = new Uint8Array(byteNumbers);
+      byteArrays.push(byteArray);
+    }
+
+    return new Blob(byteArrays, {type: contentType});
+  }
+
+  // -------- Confirmar borrado --------
+  function confirmarBorrado(index) {
+    const file = archivos[index];
+    if (!file) return;
+
+    indexToDelete = index;
+
+    confirmName.textContent = file.name;
+    confirmSize.textContent = `Tamaño: ${file.sizeMB.toFixed(2)} MB`;
+    confirmIcon.src = obtenerIconoPorTipo(file.type);
+
+    confirmModal.classList.add("active");
+  }
+
+  btnCancel.onclick = () => {
+    indexToDelete = null;
+    confirmModal.classList.remove("active");
+  };
+
+  btnConfirm.onclick = () => {
+    if (indexToDelete !== null) {
+      archivos.splice(indexToDelete, 1);
+      guardar();
+      mostrarArchivos();
+      actualizarEspacio();
+      indexToDelete = null;
+    }
+    confirmModal.classList.remove("active");
+  };
+
+  // -------- Subida de archivos simulada --------
+  fileInput.addEventListener("change", async (e) => {
+    const user = auth.currentUser;
+    if (!user) return alert("Debes iniciar sesión para subir archivos");
+
+    const files = Array.from(e.target.files);
+    e.target.value = ""; // limpiar selección
+
+    for (const f of files) {
+      const sizeMB = f.size / (1024 * 1024);
+      const totalUsado = archivos.reduce((acc, file) => acc + file.sizeMB, 0);
+
+      if (totalUsado + sizeMB > MAX_STORAGE_MB) {
+        alert(`No hay espacio suficiente para subir "${f.name}". Espacio disponible: ${(MAX_STORAGE_MB - totalUsado).toFixed(2)} MB.`);
+        continue;
+      }
+
+      await subirArchivoSimulado(f);
+    }
+  });
+
+  function subirArchivoSimulado(file) {
+    const ui = mostrarCargaEstiloMediafire(file);
+    return new Promise((resolve, reject) => {
+      uploadLoading.style.display = "block";
+      uploadText.textContent = `Subiendo archivo: ${file.name} (${(file.size/(1024*1024)).toFixed(2)} MB)`;
+
+      let progress = 0;
+      progressBar.style.width = "0%";
+      const interval = setInterval(() => {
+  progress += Math.random() * 20;
+  ui.fill.style.width = `${progress}%`;
+
+  if (progress >= 100) {
+    progress = 100;
+    clearInterval(interval);
+    ui.fill.style.width = "100%";
+    ui.status.textContent = "✅ Completado";
+    setTimeout(() => ui.item.remove(), 2500);
+
+    // Resto del código...
+  }
+}, 200);
+
+      // Leer archivo como base64
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+
+      reader.onload = () => {
+        // Extraer base64 sin metadata
+        const base64Data = reader.result.split(",")[1];
+        // Simular progreso de subida
+        const interval = setInterval(() => {
+          progress += Math.random() * 20;
+          if (progress >= 100) {
+            progress = 100;
+            clearInterval(interval);
+            progressBar.style.width = "100%";
+
+            archivos.push({
+              name: file.name,
+       sizeMB: file.size / (1024 * 1024),
+              type: file.type,
+              data: base64Data
+            });
+
+            guardar();
+            mostrarArchivos();
+            actualizarEspacio();
+
+            setTimeout(() => {
+              uploadLoading.style.display = "none";
+              resolve();
+            }, 500);
+          } else {
+            progressBar.style.width = progress + "%";
+          }
+        }, 200);
+      };
+
+      reader.onerror = () => {
+        alert("Error leyendo el archivo " + file.name);
+        uploadLoading.style.display = "none";
+        reject();
+      };
+    });
+  }
+  const loginBtn = document.getElementById("loginBtn");
+
+loginBtn.onclick = () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(err => alert("Error al iniciar sesión: " + err.message));
+};
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    logoutBtn.style.display = "block";
+    uploadArea.style.display = "block";
+    fileList.style.display = "block";
+    loginBtn.style.display = "none";
+
+    archivos = JSON.parse(localStorage.getItem(`archivosDrive_${user.uid}`)) || [];
+    mostrarArchivos();
+    actualizarEspacio();
+  } else {
+    logoutBtn.style.display = "none";
+    uploadArea.style.display = "none";
+    fileList.style.display = "none";
+    loginBtn.style.display = "block";
+    spaceUsed.innerText = '';
+    document.getElementById("menu").style.display = "none";
+  }
+});
+  function compartirArchivo(id) {
+  const urlBase = window.location.origin + window.location.pathname;
+  const linkCompartido = `${urlBase}?file=${id}`;
+
+  document.getElementById('shareLink').value = linkCompartido;
+  document.getElementById('shareModal').style.display = 'flex';
+}
+
+function copiarEnlace() {
+  const input = document.getElementById('shareLink');
+  input.select();
+  input.setSelectionRange(0, 99999); // para móviles
+  document.execCommand('copy');
+
+  // Confirmación rápida
+  const originalText = event.target.innerText;
+  event.target.innerText = "✅ Copiado";
+  setTimeout(() => event.target.innerText = originalText, 1500);
+}
+
+function cerrarShare() {
+  document.getElementById('shareModal').style.display = 'none';
+}
+  function mostrarCargaEstiloMediafire(file) {
+  const queue = document.getElementById("uploadQueue");
+
+  const item = document.createElement("div");
+  item.className = "upload-item";
+
+  const thumb = document.createElement("img");
+  thumb.className = "upload-thumb";
+  thumb.src = file.type.startsWith("image/") ? URL.createObjectURL(file) : obtenerIconoPorTipo(file.type);
+
+  const details = document.createElement("div");
+  details.className = "upload-details";
+
+  const name = document.createElement("div");
+  name.className = "upload-name";
+  name.textContent = file.name;
+
+  const size = document.createElement("div");
+  size.className = "upload-size";
+  size.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+
+  const status = document.createElement("div");
+  status.className = "upload-status";
+  status.textContent = "Subiendo...";
+
+  const bar = document.createElement("div");
+  bar.className = "upload-bar";
+
+  const fill = document.createElement("div");
+  fill.className = "upload-fill";
+  bar.appendChild(fill);
+
+  details.appendChild(name);
+  details.appendChild(size);
+  details.appendChild(status);
+  details.appendChild(bar);
+
+  item.appendChild(thumb);
+  item.appendChild(details);
+  queue.appendChild(item);
+
+  return { fill, status, item };
+}
+</script>
+
+</body>
+</html>
